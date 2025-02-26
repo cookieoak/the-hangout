@@ -3,28 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat | Beach Hangout</title>
-    <link href="https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <title>Beach Hangout - Chat</title>
+    <script src="/socket.io/socket.io.js"></script> <!-- Load Socket.io -->
+    <style>
+        body {
+            font-family: "Indie Flower", cursive;
+            background-color: #87CEEB; /* Ocean theme */
+            text-align: center;
+        }
+        #chat-box {
+            width: 80%;
+            height: 300px;
+            border: 2px solid #fff;
+            overflow-y: scroll;
+            margin: 20px auto;
+            padding: 10px;
+            background-color: #f0f8ff;
+        }
+        input, button {
+            padding: 10px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>Chat with Friends</h1>
-        <nav>
-            <a href="/">Home</a>
-            <a href="/games">Games</a>
-        </nav>
-    </header>
-    <section id="chat">
-        <input type="text" id="username" placeholder="Enter your username" />
-        <div id="messages"></div>
-        <input type="text" id="message" placeholder="Type a message..." />
-        <button id="send">Send</button>
-    </section>
-    <footer>
-        <p>Stay connected and chat away! 💬</p>
-    </footer>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="chat.js"></script>
+    <h1>💬 Beach Hangout - Chat</h1>
+    <div id="chat-box"></div>
+    <input id="message-input" type="text" placeholder="Type a message..." />
+    <button onclick="sendMessage()">Send</button>
+
+    <br><br>
+    <a href="index.html">🏠 Back to Home</a>
+
+    <script>
+        const socket = io();
+
+        function sendMessage() {
+            let msg = document.getElementById("message-input").value;
+            if (msg.trim() !== "") {
+                socket.emit("chatMessage", msg);
+                document.getElementById("message-input").value = ""; // Clear input
+            }
+        }
+
+        // Receive messages
+        socket.on("chatMessage", (msg) => {
+            let chatBox = document.getElementById("chat-box");
+            let newMessage = document.createElement("p");
+            newMessage.textContent = msg;
+            chatBox.appendChild(newMessage);
+            chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll
+        });
+    </script>
 </body>
 </html>
