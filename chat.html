@@ -29,29 +29,47 @@
 </head>
 <body>
     <h1>💬 Beach Hangout - Chat</h1>
+
+    <label for="username">Enter your username:</label>
+    <input id="username" type="text" placeholder="Your name..." />
+    <button onclick="setUsername()">Set Username</button>
+
     <div id="chat-box"></div>
-    <input id="message-input" type="text" placeholder="Type a message..." />
-    <button onclick="sendMessage()">Send</button>
+
+    <input id="message-input" type="text" placeholder="Type a message..." disabled />
+    <button onclick="sendMessage()" disabled>Send</button>
 
     <br><br>
     <a href="index.html">🏠 Back to Home</a>
 
     <script>
         const socket = io();
+        let username = "";
+
+        function setUsername() {
+            const input = document.getElementById("username").value.trim();
+            if (input) {
+                username = input;
+                document.getElementById("username").disabled = true;
+                document.querySelector("button[onclick='setUsername()']").disabled = true;
+                document.getElementById("message-input").disabled = false;
+                document.querySelector("button[onclick='sendMessage()']").disabled = false;
+            }
+        }
 
         function sendMessage() {
             let msg = document.getElementById("message-input").value;
             if (msg.trim() !== "") {
-                socket.emit("chatMessage", msg);
+                socket.emit("chatMessage", { username, message: msg });
                 document.getElementById("message-input").value = ""; // Clear input
             }
         }
 
         // Receive messages
-        socket.on("chatMessage", (msg) => {
+        socket.on("chatMessage", (data) => {
             let chatBox = document.getElementById("chat-box");
             let newMessage = document.createElement("p");
-            newMessage.textContent = msg;
+            newMessage.innerHTML = `<strong>${data.username}:</strong> ${data.message}`;
             chatBox.appendChild(newMessage);
             chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll
         });
