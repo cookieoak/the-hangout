@@ -1,90 +1,50 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beach Hangout - Chat</title>
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script> <!-- Load Socket.io -->
-    <style>
-        body {
-            font-family: "Indie Flower", cursive;
-            background-color: #87CEEB;
-            text-align: center;
-        }
-        #chat-box {
-            width: 80%;
-            height: 300px;
-            border: 2px solid #fff;
-            overflow-y: auto;
-            margin: 20px auto;
-            padding: 10px;
-            background-color: #f0f8ff;
-        }
-        input, button {
-            padding: 10px;
-            font-size: 16px;
-            margin-top: 10px;
-        }
-    </style>
-</head>
-<body>
-    <h1>💬 Beach Hangout - Chat</h1>
+// Connect to the Render backend
+const socket = io("https://your-render-app.onrender.com"); // Replace with your actual Render domain
 
-    <label for="username">Enter your username:</label>
-    <input id="username" type="text" placeholder="Your name..." />
-    <button onclick="setUsername()">Set Username</button>
+let username = "";
 
-    <div id="chat-box"></div>
+function setUsername() {
+    const input = document.getElementById("username").value.trim();
+    if (input) {
+        username = input;
+        document.getElementById("username").disabled = true;
+        document.querySelector("button[onclick='setUsername()']").disabled = true;
 
-    <input id="message-input" type="text" placeholder="Type a message..." disabled />
-    <button id="send-button" onclick="sendMessage()" disabled>Send</button>
+        // Enable chat input and send button
+        document.getElementById("message-input").disabled = false;
+        document.getElementById("send-button").disabled = false;
+    }
+}
 
-    <br><br>
-    <a href="index.html">🏠 Back to Home</a>
+function sendMessage() {
+    let msgInput = document.getElementById("message-input");
+    let msg = msgInput.value.trim();
+    if (msg) {
+        const timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        socket.emit("chatMessage", { username, message: msg, time: timestamp });
+        msgInput.value = ""; // Clear input after sending
+    }
+}
 
-    <script>
-        // Connect to the Render backend
-        const socket = io("https://your-render-app.onrender.com"); // Replace with your actual Render domain
+// Receive messages
+socket.on("chatMessage", (data) => {
+    let chatBox = document.getElementById("chat-box");
+    let newMessage = document.createElement("div");
+    newMessage.classList.add("message");
 
-        let username = "";
+    newMessage.innerHTML = `
+        <span class="user">${data.username}:</span> 
+        <span class="msg">${data.message}</span> 
+        <span class="time">${data.time}</span>
+    `;
 
-        function setUsername() {
-            const input = document.getElementById("username").value.trim();
-            if (input) {
-                username = input;
-                document.getElementById("username").disabled = true;
-                document.querySelector("button[onclick='setUsername()']").disabled = true;
-                
-                // Enable chat input and send button
-                document.getElementById("message-input").disabled = false;
-                document.getElementById("send-button").disabled = false;
-            }
-        }
+    chatBox.appendChild(newMessage);
+    chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll to latest message
+});
 
-        function sendMessage() {
-            let msgInput = document.getElementById("message-input");
-            let msg = msgInput.value.trim();
-            if (msg) {
-                socket.emit("chatMessage", { username, message: msg });
-                msgInput.value = ""; // Clear input after sending
-            }
-        }
-
-        // Receive messages
-        socket.on("chatMessage", (data) => {
-            let chatBox = document.getElementById("chat-box");
-            let newMessage = document.createElement("p");
-            newMessage.innerHTML = `<strong>${data.username}:</strong> ${data.message}`;
-            chatBox.appendChild(newMessage);
-            chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll to latest message
-        });
-
-        // Allow sending messages with "Enter" key
-        document.getElementById("message-input").addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                sendMessage();
-            }
-        });
-    </script>
-</body>
-</html>
+// Allow sending messages with "Enter" key
+document.getElementById("message-input").addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+        sendMessage();
+    }
+});
