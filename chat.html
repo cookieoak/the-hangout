@@ -37,7 +37,7 @@
     <div id="chat-box"></div>
 
     <input id="message-input" type="text" placeholder="Type a message..." disabled />
-    <button onclick="sendMessage()" disabled>Send</button>
+    <button id="send-button" onclick="sendMessage()" disabled>Send</button>
 
     <br><br>
     <a href="index.html">🏠 Back to Home</a>
@@ -52,20 +52,23 @@
                 username = input;
                 document.getElementById("username").disabled = true;
                 document.querySelector("button[onclick='setUsername()']").disabled = true;
+                
+                // Enable message input and send button
                 document.getElementById("message-input").disabled = false;
-                document.querySelector("button[onclick='sendMessage()']").disabled = false;
+                document.getElementById("send-button").disabled = false;
             }
         }
 
         function sendMessage() {
-            let msg = document.getElementById("message-input").value;
-            if (msg.trim() !== "") {
+            let msgInput = document.getElementById("message-input");
+            let msg = msgInput.value.trim();
+            if (msg) {
                 socket.emit("chatMessage", { username, message: msg });
-                document.getElementById("message-input").value = ""; // Clear input
+                msgInput.value = ""; // Clear input
             }
         }
 
-        // Receive messages
+        // Receive messages and display in chat box
         socket.on("chatMessage", (data) => {
             let chatBox = document.getElementById("chat-box");
             let newMessage = document.createElement("p");
