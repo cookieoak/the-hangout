@@ -1,5 +1,42 @@
+<head>
+    <style>
+        #chat-box {
+            width: 80%;
+            height: 300px;
+            border: 2px solid #fff;
+            overflow-y: auto;
+            margin: 20px auto;
+            padding: 10px;
+            background-color: #f0f8ff;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .user {
+            font-weight: bold;
+            color: #0077b6; /* Ocean blue */
+        }
+
+        .msg {
+            flex-grow: 1;
+            margin-left: 10px;
+        }
+
+        .time {
+            color: gray;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
 // Connect to the Render backend
-const socket = io("https://your-render-app.onrender.com"); // Replace with your actual Render domain
+const socket = io("https://the-hangout.onrender.com/index.html"); // Replace with your actual Render domain
 
 let username = "";
 
