@@ -15,7 +15,7 @@
             width: 80%;
             height: 300px;
             border: 2px solid #fff;
-            overflow-y: scroll;
+            overflow-y: auto;
             margin: 20px auto;
             padding: 10px;
             background-color: #f0f8ff;
@@ -53,7 +53,7 @@
                 document.getElementById("username").disabled = true;
                 document.querySelector("button[onclick='setUsername()']").disabled = true;
                 
-                // Enable message input and send button
+                // Enable chat input and send button
                 document.getElementById("message-input").disabled = false;
                 document.getElementById("send-button").disabled = false;
             }
@@ -64,17 +64,24 @@
             let msg = msgInput.value.trim();
             if (msg) {
                 socket.emit("chatMessage", { username, message: msg });
-                msgInput.value = ""; // Clear input
+                msgInput.value = ""; // Clear input after sending
             }
         }
 
-        // Receive messages and display in chat box
+        // Receive messages
         socket.on("chatMessage", (data) => {
             let chatBox = document.getElementById("chat-box");
             let newMessage = document.createElement("p");
             newMessage.innerHTML = `<strong>${data.username}:</strong> ${data.message}`;
             chatBox.appendChild(newMessage);
-            chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll
+            chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll to latest message
+        });
+
+        // Ensure Enter key also sends messages
+        document.getElementById("message-input").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                sendMessage();
+            }
         });
     </script>
 </body>
