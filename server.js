@@ -1,71 +1,30 @@
-const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
+const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
+const path = require("path");
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server);
+const io = new Server(server);
 
-app.use(express.static('public'));
+// Serve static files from the "public" folder
+app.use(express.static(path.join(__dirname, "public")));
 
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/public/index.html');
-});
+// Handle real-time chat with Socket.io
+io.on("connection", (socket) => {
+    console.log("A user connected! 🚀");
 
-app.get('/games', (req, res) => {
-    res.sendFile(__dirname + '/public/games.html');
-});
-
-app.get('/chat', (req, res) => {
-    res.sendFile(__dirname + '/public/chat.html');
-});
-
-io.on('connection', (socket) => {
-    console.log('A user connected');
-
-    socket.on('chatMessage', (data) => {
-        io.emit('chatMessage', data);
+    socket.on("chatMessage", (data) => {
+        io.emit("chatMessage", data); // Broadcast message with username
     });
 
-    socket.on('disconnect', () => {
-        console.log('A user disconnected');
+    socket.on("disconnect", () => {
+        console.log("A user disconnected ❌");
     });
 });
 
+// Dynamic port for Render hosting
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
-const io = require('socket.io')(server);
-
-let gameState = Array(9).fill(null);
-let currentPlayer = 'X';
-
-io.on('connection', (socket) => {
-    console.log('A user connected');
-    
-    socket.on('playerMove', (data) => {
-        if (gameState[data.index] === null) {
-            gameState[data.index] = data.player;
-            io.emit('opponentMove', data);
-            checkForWinner();
-            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-        }
-    });
-
-    function checkForWinner() {
-        const winningCombinations = [
-            [0, 1, 2], [3, 4, 5], [6, 7, 8],
-            [0, 3, 6], [1, 4, 7], [2, 5, 8],
-            [0, 4, 8], [2, 4, 6]
-        ];
-
-        winningCombinations.forEach(combination => {
-            const [a, b, c] = combination;
-            if (gameState[a] && gameState[a] === gameState[b] && gameState[a] === gameState[c]) {
-                io.emit('gameOver', `${gameState[a]} wins!`);
-                gameState = Array(9).fill(null);
-            }
-        });
-    }
+    console.log(`Server running on port ${PORT} 🌍`);
 });
